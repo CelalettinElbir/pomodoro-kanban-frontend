@@ -1,4 +1,3 @@
 ﻿TODO:
-1) Taska tıklandığı zaman task detayları görünecek. 
-2)
+1) pomodoro detay sayfasında timer açık olacak ve timer butonuna bastığında ekranda pomodor belirecek. 
 
