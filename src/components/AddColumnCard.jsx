@@ -1,84 +1,68 @@
-﻿import React, { useState } from 'react';
+﻿import { useState } from 'react';
+import { Check, Plus, X } from 'lucide-react';
 
-const AddColumnCard = ({ onAdd }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    
-    // Tek bir obje üzerinden state yönetimi
-    const [formData, setFormData] = useState({
-        title: '',
-        orderIndex: ''
-    });
+function AddColumnCard({ onAdd }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState('');
 
-    // Dinamik input handler: name attribute'una göre eşleme yapar
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
 
-    const handleCancel = () => {
-        setFormData({ title: '', orderIndex: '' });
-        setIsEditing(false);
-    };
+    if (!trimmedTitle) return;
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (formData.title.trim()) {
-            // Veriyi gönderirken sayıya çevirme işlemini yapıyoruz
-            onAdd(formData.title, parseInt(formData.orderIndex) || 0);
-            handleCancel();
-        }
-    };
+    onAdd(trimmedTitle);
+    setTitle('');
+    setIsEditing(false);
+  };
 
-    if (!isEditing) {
-        return (
-            <button
-                onClick={() => setIsEditing(true)}
-                className="w-72 shrink-0 bg-gray-200/50 hover:bg-gray-200 p-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-600 font-medium transition-all flex items-center justify-center gap-2"
-            >
-                <span className="text-xl">+</span> Yeni Aşama Ekle
-            </button>
-        );
-    }
-
+  if (!isEditing) {
     return (
-        <div className="w-72 shrink-0 bg-gray-200 p-3 rounded-xl shadow-sm">
-            <form onSubmit={handleSubmit}>
-                <input
-                    autoFocus
-                    name="title" // State'deki key ile aynı olmalı
-                    className="w-full p-2 rounded border border-blue-400 outline-none px-2 py-1 text-sm text-red-500"
-                    placeholder="Aşama başlığı girin..."
-                    value={formData.title}
-                    onChange={handleChange}
-                />
-
-                <input 
-                    type="number" 
-                    name="orderIndex" // State'deki key ile aynı olmalı
-                    className="w-full p-2 rounded border border-blue-400 outline-none text-sm mt-2 text-red-500" 
-                    placeholder="Sıra numarası (isteğe bağlı)" 
-                    value={formData.orderIndex}
-                    onChange={handleChange}
-                />
-
-                <div className="flex gap-2 mt-2">
-                    <button type="submit" className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-semibold hover:bg-blue-700">
-                        Ekle
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleCancel}
-                        className="text-gray-500 hover:text-gray-700 text-sm"
-                    >
-                        Vazgeç
-                    </button>
-                </div>
-            </form>
-        </div>
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-700 shadow-sm hover:bg-gray-50"
+        aria-label="Kolon ekle"
+        title="Kolon ekle"
+      >
+        <Plus size={18} />
+      </button>
     );
-};
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-sm rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+      <input
+        autoFocus
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder="Kolon başlığı..."
+        className="w-full rounded border border-gray-300 px-2 py-1 text-sm outline-none"
+      />
+      <div className="mt-2 flex gap-2">
+        <button
+          type="submit"
+          className="rounded bg-gray-900 p-2 text-white"
+          aria-label="Kaydet"
+          title="Kaydet"
+        >
+          <Check size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setIsEditing(false);
+            setTitle('');
+          }}
+          className="rounded border border-gray-200 p-2 text-gray-600"
+          aria-label="İptal"
+          title="İptal"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default AddColumnCard;
