@@ -13,6 +13,7 @@ import {
 } from './api';
 import Column from './components/Column';
 import AddColumnCard from './components/AddColumnCard';
+import { useAuth } from './context/AuthContext';
 
 const COLUMN_DROPPABLE_PREFIX = 'column-';
 const TASK_DRAGGABLE_PREFIX = 'task-';
@@ -66,6 +67,7 @@ const normalizeBoard = (columnsWithTasks = []) => {
 };
 
 function App() {
+  const { logout, user } = useAuth();
   const [columnsById, setColumnsById] = useState({});
   const [columnOrder, setColumnOrder] = useState([]);
   const [tasksById, setTasksById] = useState({});
@@ -397,10 +399,26 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
       <header className="border-b border-gray-200 bg-white px-6 py-4">
-        <h1 className="flex items-center gap-2 text-xl font-bold">
-          <span className="text-red-500">🍅</span>
-          PomoKanban
-        </h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="flex items-center gap-2 text-xl font-bold">
+            <span className="text-red-500">🍅</span>
+            PomoKanban
+          </h1>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-gray-500 sm:block">
+              {user?.username || user?.email || 'Kullanici'}
+            </span>
+
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Cikis Yap
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="h-[calc(100vh-72px)] overflow-hidden p-6">

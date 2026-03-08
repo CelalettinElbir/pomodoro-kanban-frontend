@@ -2,9 +2,34 @@
 
 const api = axios.create({
   baseURL: 'http://localhost:8000',
+  withCredentials: true,
 });
 
-export const fetchColumnsWithTasks = () => api.get('columns/get_columns_with_tasks/');
+let activeAccessToken = null;
+
+api.interceptors.request.use((config) => {
+  if (activeAccessToken) {
+    config.headers.Authorization = `Bearer ${activeAccessToken}`;
+  }
+
+  return config;
+});
+
+export const setAccessToken = (token) => {
+  activeAccessToken = token ?? null;
+};
+
+export const registerUser = (payload) => api.post('/auth/register', payload);
+
+export const loginUser = (payload) => api.post('/auth/login', payload);
+
+export const refreshToken = () => api.post('/auth/refresh');
+
+export const logoutUser = () => api.post('/auth/logout');
+
+export const fetchMe = () => api.get('/auth/me');
+
+export const fetchColumnsWithTasks = () => api.get('/columns/get_columns_with_tasks/');
 
 export const createColumn = (title, orderIndex) =>
   api.post('/columns/', { title, order_index: orderIndex });
