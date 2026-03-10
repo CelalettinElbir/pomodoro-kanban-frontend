@@ -1,11 +1,13 @@
 ﻿import { useCallback, useEffect, useState } from 'react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
+import { Settings, Sparkles, X } from 'lucide-react';
 import {
   createColumn,
   createTask,
   deleteColumn,
   deleteTask,
   fetchColumnsWithTasks,
+  generateAiTasks,
   moveColumn,
   moveTaskApi,
   updateColumn,
@@ -73,7 +75,12 @@ function App() {
   const [tasksById, setTasksById] = useState({});
   const [taskOrderByColumn, setTaskOrderByColumn] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiGoal, setAiGoal] = useState('');
+  const [selectedColumnId, setSelectedColumnId] = useState('');
+  const [isGeneratingAiTasks, setIsGeneratingAiTasks] = useState(false);
+  const [aiError, setAiError] = useState('');
+  
   const snapshotState = useCallback(() => ({
     columnsById,
     columnOrder,
@@ -105,6 +112,17 @@ function App() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (!selectedColumnId && columnOrder.length > 0) {
+      setSelectedColumnId(columnOrder[0]);
+      return;
+    }
+
+    if (selectedColumnId && !columnOrder.includes(selectedColumnId)) {
+      setSelectedColumnId(columnOrder[0] ?? '');
+    }
+  }, [columnOrder, selectedColumnId]);
 
   const handleAddColumn = async (title) => {
     const tempId = `tmp-col-${Date.now()}`;
@@ -278,6 +296,46 @@ function App() {
     }
   };
 
+  const closeAiModal = () => {
+    setIsAiModalOpen(false);
+    setAiGoal('');
+    setAiError('');
+    setSelectedColumnId((prevSelectedColumnId) => prevSelectedColumnId || columnOrder[0] || '');
+  };
+
+  const handleGenerateTasksFromAi = async (event) => {
+    event.preventDefault();
+
+    const trimmedGoal = aiGoal.trim();
+    if (!trimmedGoal) {
+      setAiError('Lutfen bir hedef girin.');
+      return;
+    }
+
+    if (!selectedColumnId) {
+      setAiError('Lutfen bir kolon secin.');
+      return;
+    }
+
+    setAiError('');
+    setIsGeneratingAiTasks(true);
+
+    try {
+      await generateAiTasks(trimmedGoal, selectedColumnId);
+      await loadData();
+      closeAiModal();
+    } catch (error) {
+      const backendMessage = error?.response?.data?.detail;
+      setAiError(
+        typeof backendMessage === 'string'
+          ? backendMessage
+          : 'AI gorevleri uretilirken bir hata olustu.',
+      );
+    } finally {
+      setIsGeneratingAiTasks(false);
+    }
+  };
+
   const handleUpdateTask = async (taskId, payload) => {
     const prev = snapshotState();
 
@@ -409,6 +467,7 @@ function App() {
             <span className="hidden text-sm text-gray-500 sm:block">
               {user?.username || user?.email || 'Kullanici'}
             </span>
+           
 
             <button
               type="button"
@@ -429,9 +488,25 @@ function App() {
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex h-full flex-col">
-            <div className="mb-4">
-              <AddColumnCard onAdd={handleAddColumn} />
-            </div>
+              <div className="mb-4 flex items-center gap-2">
+                <AddColumnCard onAdd={handleAddColumn} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiError('');
+                    setAiGoal('');
+                    setSelectedColumnId((prevSelectedColumnId) => prevSelectedColumnId || columnOrder[0] || '');
+                    setIsAiModalOpen(true);
+                  }}
+                  disabled={columnOrder.length === 0}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="AI ile gorev olustur"
+                  aria-label="AI ile gorev olustur"
+                >
+                  <Sparkles size={16} />
+                  AI ile Gorev Uret
+                </button>
+              </div>
 
             <Droppable droppableId="board-columns" direction="horizontal" type="COLUMN">
               {(provided) => (
@@ -473,6 +548,81 @@ function App() {
           </DragDropContext>
         )}
       </main>
+
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handleGenerateTasksFromAi}
+            className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-gray-900">AI ile Gorev Uret</h2>
+              <button
+                type="button"
+                onClick={closeAiModal}
+                className="rounded-md border border-gray-200 p-2 text-gray-600 hover:bg-gray-50"
+                title="Kapat"
+                aria-label="Kapat"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="ai-goal" className="mb-1 block text-sm font-semibold text-gray-700">
+                Hedef
+              </label>
+              <textarea
+                id="ai-goal"
+                autoFocus
+                rows={4}
+                value={aiGoal}
+                onChange={(event) => setAiGoal(event.target.value)}
+                placeholder="Ornek: Bu hafta onboarding dokumantasyonunu tamamlamak icin gorevler olustur"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="ai-column" className="mb-1 block text-sm font-semibold text-gray-700">
+                Eklenecek Kolon
+              </label>
+              <select
+                id="ai-column"
+                value={selectedColumnId}
+                onChange={(event) => setSelectedColumnId(event.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+              >
+                {columnOrder.map((columnId) => (
+                  <option key={columnId} value={columnId}>
+                    {columnsById[columnId]?.title ?? `Kolon ${columnId}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {aiError && <p className="mb-3 text-sm text-red-600">{aiError}</p>}
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeAiModal}
+                className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                disabled={isGeneratingAiTasks}
+              >
+                Iptal
+              </button>
+              <button
+                type="submit"
+                className="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isGeneratingAiTasks || columnOrder.length === 0}
+              >
+                {isGeneratingAiTasks ? 'Uretiliyor...' : 'Gorevleri Uret'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

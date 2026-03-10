@@ -45,6 +45,12 @@ export const moveColumn = (columnId, newOrderIndex) =>
 export const createTask = (title, columnId, payload = {}) =>
   api.post('/tasks/', { title, column_id: Number(columnId), ...payload });
 
+export const generateAiTasks = (goal, columnId) =>
+  api.post('tasks/ai/generate', {
+    goal,
+    column_id: Number(columnId),
+  });
+
 export const fetchTask = (taskId) => api.get(`/tasks/${taskId}`);
 
 
