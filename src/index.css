@@ -1,7 +1,18 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap');
 
 :root {
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --kf-bg: #f3f7fb;
+  --kf-surface: #ffffff;
+  --kf-surface-soft: #f7fbff;
+  --kf-text: #0f1f38;
+  --kf-muted: #627089;
+  --kf-primary: #ff7a1a;
+  --kf-primary-strong: #ee6200;
+  --kf-accent: #0e7ce6;
+  --kf-border: #d8e5f5;
+
+  font-family: Manrope, Segoe UI, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -14,12 +25,23 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #f3f4f6;
+  color: var(--kf-text);
+  background:
+    radial-gradient(1200px 600px at -5% -10%, #ffd9bf 0%, transparent 55%),
+    radial-gradient(1200px 600px at 105% -20%, #cfe7ff 0%, transparent 55%),
+    var(--kf-bg);
 }
 
 button {
   font-family: inherit;
   cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: Sora, Manrope, Segoe UI, Helvetica, Arial, sans-serif;
 }
 
 #root {
