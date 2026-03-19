@@ -8,7 +8,7 @@ import {
   setAccessToken,
 } from '../api';
 
-const TOKEN_STORAGE_KEY = 'pomokanban_access_token';
+const TOKEN_STORAGE_KEY = 'kanbanfocus_access_token';
 
 const AuthContext = createContext(null);
 

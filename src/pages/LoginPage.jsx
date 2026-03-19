@@ -48,7 +48,7 @@ function LoginPage() {
             Yayinla
           </h1>
           <p className="mt-4 text-sm text-[var(--kf-muted)]">
-            PomoKanban ile odak surecini sade, hizli ve net yonet.
+            kanbanfocus ile odak surecini sade, hizli ve net yonet.
           </p>
           <div className="mt-6 space-y-2 text-sm text-[var(--kf-muted)]">
             <p>%100 mobil uyumlu board</p>
@@ -59,7 +59,7 @@ function LoginPage() {
 
         <div className="w-full p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-[var(--kf-text)]">Giris Yap</h2>
-          <p className="mt-1 text-sm text-[var(--kf-muted)]">PomoKanban hesabina eris.</p>
+          <p className="mt-1 text-sm text-[var(--kf-muted)]">kanbanfocus hesabina eris.</p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm font-medium text-[var(--kf-text)]">

@@ -64,7 +64,7 @@ function RegisterPage() {
 
         <div className="w-full p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-[var(--kf-text)]">Kayit Ol</h2>
-          <p className="mt-1 text-sm text-[var(--kf-muted)]">Yeni bir PomoKanban hesabi olustur.</p>
+          <p className="mt-1 text-sm text-[var(--kf-muted)]">Yeni bir kanbanfocus hesabi olustur.</p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm font-medium text-[var(--kf-text)]">
