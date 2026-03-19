@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useState } from 'react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { Settings, Sparkles, X } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import {
   createColumn,
   createTask,
@@ -456,23 +456,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
+      <header className="border-b border-gray-200 bg-white px-3 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="flex items-center gap-2 text-xl font-bold">
+          <h1 className="flex items-center gap-2 text-lg font-bold sm:text-xl">
             <span className="text-red-500">🍅</span>
             PomoKanban
           </h1>
 
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-gray-500 sm:block">
+            <span className="hidden text-sm text-gray-500 md:block">
               {user?.username || user?.email || 'Kullanici'}
             </span>
-           
 
             <button
               type="button"
               onClick={logout}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              className="min-h-10 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 sm:text-sm"
             >
               Cikis Yap
             </button>
@@ -480,7 +479,7 @@ function App() {
         </div>
       </header>
 
-      <main className="h-[calc(100vh-72px)] overflow-hidden p-6">
+      <main className="h-[calc(100vh-68px)] overflow-x-auto overflow-y-hidden p-3 sm:h-[calc(100vh-72px)] sm:p-6">
         {isLoading ? (
           <div className="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-500">
             Board yükleniyor...
@@ -488,18 +487,20 @@ function App() {
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex h-full flex-col">
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4">
                 <AddColumnCard onAdd={handleAddColumn} />
                 <button
                   type="button"
                   onClick={() => {
                     setAiError('');
                     setAiGoal('');
-                    setSelectedColumnId((prevSelectedColumnId) => prevSelectedColumnId || columnOrder[0] || '');
+                    setSelectedColumnId(
+                      (prevSelectedColumnId) => prevSelectedColumnId || columnOrder[0] || '',
+                    );
                     setIsAiModalOpen(true);
                   }}
                   disabled={columnOrder.length === 0}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   title="AI ile gorev olustur"
                   aria-label="AI ile gorev olustur"
                 >
@@ -508,42 +509,46 @@ function App() {
                 </button>
               </div>
 
-            <Droppable droppableId="board-columns" direction="horizontal" type="COLUMN">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="grid h-full min-h-0 w-full items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-1"
-                  style={{
-                    gridTemplateColumns: `repeat(${boardColumnCount}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {columnOrder.map((columnId, index) => {
-                    const column = columnsById[columnId];
-                    const taskIds = taskOrderByColumn[columnId] ?? [];
-                    const tasks = taskIds.map((taskId) => tasksById[taskId]).filter(Boolean);
+              <Droppable droppableId="board-columns" direction="horizontal" type="COLUMN">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="flex h-full min-h-0 w-full gap-3 overflow-x-auto overflow-y-hidden pb-1 touch-pan-x sm:gap-4 md:grid md:overflow-x-hidden"
+                    style={{
+                      gridTemplateColumns: `repeat(${boardColumnCount}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {columnOrder.map((columnId, index) => {
+                      const column = columnsById[columnId];
+                      const taskIds = taskOrderByColumn[columnId] ?? [];
+                      const tasks = taskIds.map((taskId) => tasksById[taskId]).filter(Boolean);
 
-                    if (!column) return null;
+                      if (!column) return null;
 
-                    return (
-                      <Column
-                        key={column.id}
-                        column={column}
-                        index={index}
-                        tasks={tasks}
-                        onAddTask={handleAddTask}
-                        onDeleteColumn={handleDeleteColumn}
-                        onDeleteTask={handleDeleteTask}
-                        onUpdateColumn={handleUpdateColumn}
-                        onUpdateTask={handleUpdateTask}
-                      />
-                    );
-                  })}
+                      return (
+                        <div
+                          key={column.id}
+                          className="h-full min-h-0 w-[78vw] min-w-[78vw] sm:w-[70vw] sm:min-w-[70vw] md:w-auto md:min-w-0"
+                        >
+                          <Column
+                            column={column}
+                            index={index}
+                            tasks={tasks}
+                            onAddTask={handleAddTask}
+                            onDeleteColumn={handleDeleteColumn}
+                            onDeleteTask={handleDeleteTask}
+                            onUpdateColumn={handleUpdateColumn}
+                            onUpdateTask={handleUpdateTask}
+                          />
+                        </div>
+                      );
+                    })}
 
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
             </div>
           </DragDropContext>
         )}
