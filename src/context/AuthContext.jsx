@@ -53,6 +53,28 @@ export function AuthProvider({ children }) {
     return nextUser;
   }, []);
 
+  const ensureAccessToken = useCallback(
+    async (payload) => {
+      let token = extractAccessToken(payload);
+
+      if (!token) {
+        try {
+          const refreshResponse = await refreshToken();
+          token = extractAccessToken(refreshResponse.data);
+        } catch {
+          token = null;
+        }
+      }
+
+      if (token) {
+        applyAccessToken(token);
+      }
+
+      return token;
+    },
+    [applyAccessToken],
+  );
+
   useEffect(() => {
     const bootstrapAuth = async () => {
       const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -110,10 +132,7 @@ export function AuthProvider({ children }) {
         throw lastError;
       }
 
-      const token = extractAccessToken(response.data);
-      if (token) {
-        applyAccessToken(token);
-      }
+      await ensureAccessToken(response.data);
 
       try {
         await loadCurrentUser();
@@ -126,16 +145,17 @@ export function AuthProvider({ children }) {
         }
       }
     },
-    [applyAccessToken, loadCurrentUser],
+    [ensureAccessToken, loadCurrentUser],
   );
 
   const register = useCallback(
     async ({ username, email, password }) => {
       const response = await registerUser({ username, email, password });
-      const token = extractAccessToken(response.data);
+      const token = await ensureAccessToken(response.data);
 
-      if (token) {
-        applyAccessToken(token);
+      if (!token) {
+        await login({ identifier: email, password });
+        return response.data;
       }
 
       try {
@@ -151,7 +171,7 @@ export function AuthProvider({ children }) {
 
       return response.data;
     },
-    [applyAccessToken, loadCurrentUser, login],
+    [ensureAccessToken, loadCurrentUser, login],
   );
 
   const logout = useCallback(async () => {
@@ -166,7 +186,7 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       accessToken,
-      isAuthenticated: Boolean(user),
+      isAuthenticated: Boolean(user && accessToken),
       isInitializing,
       login,
       register,
